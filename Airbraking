@@ -3,9 +3,9 @@
 
 int main(void) {
 	double time;
-	double alt = 0;
+	double alt = 4000;
 	double velocity = 0;
-	double mass = 300;
+	double mass;
 	double density;
 	double drag;
 	double weight;
