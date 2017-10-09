@@ -1,0 +1,60 @@
+#include <stdio.h>
+#include <math.h>
+
+int main(void) {
+	double time;
+	double alt = 0;
+	double velocity = 0;
+	double mass = 300;
+	double density;
+	double drag;
+	double weight;
+	double force;
+	double thrust;
+	double brake;
+	double goal = 9144;
+	double tend;
+	double fneed;
+	for (time = 0; time < 5.3;) {
+		if (time < 3) {
+			thrust = 2600;
+		}
+		if ((time > 3) & (time < 4)) {
+			thrust -= 850 * .1;
+		}
+		if (time > 4) {
+			thrust -= 1250 * .1;
+		}
+		alt += velocity*.1;
+		density = 1.225 * pow(1 + (-.0065*alt / 287), (4.25363734));
+		drag = .5*density*(pow(velocity, 2)) * .00912;
+		weight = 131.997 - 1.330185185*time;
+		force = thrust - drag - weight;
+		mass = weight / 9.81;
+		velocity += force*.1 / mass;
+		printf("altitude = %f\nvelocity = %f\ntime = %f\n", alt, velocity, time);
+		time += .1;
+	}
+	for (time = 5.4; velocity > 0;) {
+		weight = 124.814;
+		mass = weight / 9.81;
+		tend = (goal - alt)*2  / velocity;
+		fneed = velocity *mass / (tend);
+		alt += velocity*.1;
+		density = 1.225 * pow(1 + (-.0065*alt / 287), (4.25363734));
+		drag = .5*density*(pow(velocity, 2)) * .00912;
+		brake = .5*density*(pow(velocity, 2)) * .1;
+		if ((drag + weight) < fneed) {
+			force = -drag - brake - weight;
+			printf("airbrakes on\n");
+		}
+		if ((drag + weight) > fneed) {
+			force = -drag - weight;
+			printf("airbrakes off\n");
+		}
+		velocity += force*.1 / mass;
+		printf("altitude = %f\nvelocity = %f\ntime = %f\n", alt, velocity, time);
+		time += .1;
+	}
+	return 0;
+}
