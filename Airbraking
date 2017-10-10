@@ -1,60 +1,75 @@
 #include <stdio.h>
 #include <math.h>
 
-int main(void) {
+#define G 9.81
+#define SEA_DENSITY 1.225
+#define TIME_DELTA 0.1
+#define CD_BRAKE 0.1
+#define CD_DRAG 0.00912
+#define GOAL 4506
+
+
+double density_from_altitude(double altitude)
+{
+	return SEA_DENSITY * pow(1 + (-.0065 * altitude / 287), 4.25363734);
+}
+
+
+int main(void)
+{
 	double time;
 	double alt = 0;
 	double velocity = 0;
-	double mass = 300;
+	double mass;
 	double density;
 	double drag;
 	double weight;
 	double force;
 	double thrust;
 	double brake;
-	double goal = 9144;
 	double tend;
 	double fneed;
-	for (time = 0; time < 5.3;) {
-		if (time < 3) {
-			thrust = 2600;
+
+	thrust = 2600;
+	weight = 131.997;
+	for (time = 0; time < 5.4; time += TIME_DELTA) {
+		if (time >= 3) {
+			thrust -= (time < 4 ? 850 : 1250) * TIME_DELTA;
 		}
-		if ((time > 3) & (time < 4)) {
-			thrust -= 850 * .1;
-		}
-		if (time > 4) {
-			thrust -= 1250 * .1;
-		}
-		alt += velocity*.1;
-		density = 1.225 * pow(1 + (-.0065*alt / 287), (4.25363734));
-		drag = .5*density*(pow(velocity, 2)) * .00912;
-		weight = 131.997 - 1.330185185*time;
+
+		alt += velocity * TIME_DELTA;
+		density = density_from_altitude(alt);
+		drag = .5 * density * velocity * velocity * CD_DRAG;
+		weight -= 1.330185185 * TIME_DELTA;
 		force = thrust - drag - weight;
-		mass = weight / 9.81;
-		velocity += force*.1 / mass;
-		printf("altitude = %f\nvelocity = %f\ntime = %f\n", alt, velocity, time);
-		time += .1;
+		mass = weight / G;
+		velocity += force / mass * TIME_DELTA;
+
+		printf("altitude = %f\nvelocity = %f\ntime = %f\n\n", alt, velocity, time);
 	}
-	for (time = 5.4; velocity > 0;) {
-		weight = 124.814;
-		mass = weight / 9.81;
-		tend = (goal - alt)*2  / velocity;
-		fneed = velocity *mass / (tend);
-		alt += velocity*.1;
-		density = 1.225 * pow(1 + (-.0065*alt / 287), (4.25363734));
-		drag = .5*density*(pow(velocity, 2)) * .00912;
-		brake = .5*density*(pow(velocity, 2)) * .1;
-		if ((drag + weight) < fneed) {
+
+	weight = 124.814;
+	mass = weight / G;
+	for (; velocity > 0; time += TIME_DELTA) {
+		tend = (GOAL - alt) * 2  / velocity;
+		fneed = velocity * mass / tend;
+		alt += velocity * TIME_DELTA;
+		density = density_from_altitude(alt);
+		drag = .5 * density * velocity * velocity * CD_DRAG;
+		brake = .5 * density * velocity * velocity * CD_BRAKE;
+
+		if (drag + weight < fneed) {
 			force = -drag - brake - weight;
 			printf("airbrakes on\n");
 		}
-		if ((drag + weight) > fneed) {
+		else {
 			force = -drag - weight;
 			printf("airbrakes off\n");
 		}
-		velocity += force*.1 / mass;
-		printf("altitude = %f\nvelocity = %f\ntime = %f\n", alt, velocity, time);
-		time += .1;
+
+		velocity += force / mass * TIME_DELTA;
+
+		printf("altitude = %f\nvelocity = %f\ntime = %f\n\n", alt, velocity, time);
 	}
 	return 0;
 }
