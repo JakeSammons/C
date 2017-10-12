@@ -4,9 +4,9 @@
 #define G 9.81
 #define SEA_DENSITY 1.225
 #define TIME_DELTA 0.1
-#define CD_BRAKE 0.1
-#define CD_DRAG 0.00912
-#define GOAL 4506
+#define CD_BRAKE 0.03
+#define CD_DRAG 0.002
+#define GOAL 9005
 
 
 double density_from_altitude(double altitude)
@@ -31,7 +31,7 @@ int main(void)
 	double fneed;
 
 	thrust = 2600;
-	weight = 131.997;
+	weight = 177.93;
 	for (time = 0; time < 5.4; time += TIME_DELTA) {
 		if (time >= 3) {
 			thrust -= (time < 4 ? 850 : 1250) * TIME_DELTA;
@@ -48,7 +48,7 @@ int main(void)
 		printf("altitude = %f\nvelocity = %f\ntime = %f\n\n", alt, velocity, time);
 	}
 
-	weight = 124.814;
+	weight = 111.2;
 	mass = weight / G;
 	for (; velocity > 0; time += TIME_DELTA) {
 		tend = (GOAL - alt) * 2  / velocity;
